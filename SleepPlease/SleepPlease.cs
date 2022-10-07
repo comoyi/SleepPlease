@@ -67,9 +67,6 @@ public class SleepPlease : BaseUnityPlugin
         configCanSleepTipText = Config.Bind("Tip", "CanSleepTipText", "天黑了！", "Can sleep tip text");
         canSleepTipText = configCanSleepTipText.Value;
 
-
-        // Game.instance.InvokeRepeating("checkSleep", 0, 3);
-
         guiStyle = new GUIStyle();
         guiStyle.normal.textColor = Color.yellow;
         guiStyle.fontSize = 20;
@@ -79,7 +76,7 @@ public class SleepPlease : BaseUnityPlugin
             guiStyle.font = f;
         }
 
-        sleepIcon = getSleepIcon();
+        sleepIcon = GetSleepIcon();
 
         harmony.PatchAll();
         Log.LogDebug("loaded");
@@ -97,14 +94,12 @@ public class SleepPlease : BaseUnityPlugin
             {
                 GUI.Label(new Rect(positionX - 35, positionY + offsetY, 32, 32), sleepIcon);
                 GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                // GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"Inbed", guiStyle);
                 offsetY += 20;
             }
 
             foreach (Player p in notInBedPlayers)
             {
                 GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                // GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"NotInBed", guiStyle);
                 offsetY += 20;
             }
         }
@@ -120,7 +115,7 @@ public class SleepPlease : BaseUnityPlugin
             timer.Enabled = true;
             timer.Interval = 3000;
             timer.Start();
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(checkSleep);
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(CheckSleep);
         }
     }
 
@@ -149,7 +144,7 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    static void checkSleep(object source, ElapsedEventArgs args)
+    private static void CheckSleep(object source, ElapsedEventArgs args)
     {
         isShowInBed = false;
 
@@ -166,11 +161,6 @@ public class SleepPlease : BaseUnityPlugin
         {
             return;
         }
-
-        // if (player.InBed())
-        // {
-        //     return;
-        // }
 
         // Log.LogDebug("3");
 
@@ -224,9 +214,7 @@ public class SleepPlease : BaseUnityPlugin
                 if (dailyTippedTimes <= dailyMaxTipTimes)
                 {
                     Log.LogDebug("show message center");
-                    // MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText}", 0);
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center,
-                        $"{sleepTipText} {inBed}/{total} 已躺好", 0);
+                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText} {inBed}/{total} 已躺好", 0);
                 }
                 else
                 {
@@ -236,14 +224,14 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    private Texture2D getSleepIcon()
+    private Texture2D GetSleepIcon()
     {
-        string relativeFilePath = "BepInEx\\plugins\\Sleep\\sleep.png";
-        Texture2D tex = loadTexture(relativeFilePath);
+        string relativeFilePath = "BepInEx\\plugins\\SleepPlease\\sleep.png";
+        Texture2D tex = LoadTexture(relativeFilePath);
         if (tex == null)
         {
             Log.LogInfo("Loaded default sleep icon");
-            tex = getDefaultSleepIcon();
+            tex = GetDefaultSleepIcon();
         }
         else
         {
@@ -253,7 +241,7 @@ public class SleepPlease : BaseUnityPlugin
         return tex;
     }
 
-    private Texture2D getDefaultSleepIcon()
+    private Texture2D GetDefaultSleepIcon()
     {
         Texture2D tex = new Texture2D(10, 10);
         byte[] pngBytes = new byte[]
@@ -291,7 +279,7 @@ public class SleepPlease : BaseUnityPlugin
         return tex;
     }
 
-    static Texture2D loadTexture(string relativeFilePath)
+    private static Texture2D LoadTexture(string relativeFilePath)
     {
         // Log.LogDebug($"rel:{relativeFilePath}");
         string filePath = System.IO.Path.GetFullPath(relativeFilePath);
@@ -301,7 +289,6 @@ public class SleepPlease : BaseUnityPlugin
 
         if (System.IO.File.Exists(filePath))
         {
-            // Log.LogDebug("l1");
             try
             {
                 fileData = System.IO.File.ReadAllBytes(filePath);
@@ -318,8 +305,6 @@ public class SleepPlease : BaseUnityPlugin
                 return tex2D;
             }
         }
-
-        // Log.LogDebug("l3");
 
         return null;
     }
