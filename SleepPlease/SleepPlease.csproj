@@ -30,4 +30,8 @@
         <HintPath>..\Libs\assembly_valheim.dll</HintPath>
       </Reference>
     </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="Xcopy &quot;$(OutDir)SleepPlease.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\SleepPlease\&quot; /y" />
+    </Target>
 </Project>
