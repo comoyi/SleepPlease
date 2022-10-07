@@ -51,9 +51,9 @@ public class SleepPlease : BaseUnityPlugin
     {
         Log = Logger;
 
-        configPositionX = Config.Bind("UI", "X", 50, "Position x");
+        configPositionX = Config.Bind("UI", "X", 50, "Position X");
         positionX = configPositionX.Value;
-        configPositionY = Config.Bind("UI", "Y", 500, "Position y");
+        configPositionY = Config.Bind("UI", "Y", 500, "Position Y");
         positionY = configPositionY.Value;
 
         configMaxDailyTipTimes = Config.Bind("Tip", "MaxDailyTipTimes", 3, "Show sleep tip max times per day");
@@ -64,7 +64,7 @@ public class SleepPlease : BaseUnityPlugin
         configCanSleepMaxDailyTipTimes =
             Config.Bind("Tip", "CanSleepMaxDailyTipTimes", 1, "Show sleep tip max times per day");
         canSleepDailyMaxTipTimes = configCanSleepMaxDailyTipTimes.Value;
-        configCanSleepTipText = Config.Bind("Tip", "CanSleepTipText", "天黑了！", "Can sleep tip text");
+        configCanSleepTipText = Config.Bind("Tip", "CanSleepTipText", "可以睡觉了！", "Can sleep tip text");
         canSleepTipText = configCanSleepTipText.Value;
 
         guiStyle = new GUIStyle();
@@ -90,23 +90,30 @@ public class SleepPlease : BaseUnityPlugin
             // int offsetX = 0;
             int offsetY = 0;
 
-            foreach (Player p in inBedPlayers)
+            try
             {
-                GUI.Label(new Rect(positionX - 35, positionY + offsetY, 32, 32), sleepIcon);
-                GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                offsetY += 20;
-            }
+                foreach (Player p in inBedPlayers)
+                {
+                    GUI.Label(new Rect(positionX - 35, positionY + offsetY, 32, 32), sleepIcon);
+                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
+                    offsetY += 20;
+                }
 
-            foreach (Player p in notInBedPlayers)
+                foreach (Player p in notInBedPlayers)
+                {
+                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
+                    offsetY += 20;
+                }
+            }
+            catch (Exception)
             {
-                GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                offsetY += 20;
+                return;
             }
         }
     }
 
     [HarmonyPatch(typeof(Game), "Awake")]
-    class CheckSleepPatch
+    private class CheckSleepPatch
     {
         [HarmonyPostfix]
         static void Postfix()
@@ -121,7 +128,7 @@ public class SleepPlease : BaseUnityPlugin
 
 
     [HarmonyPatch(typeof(Game), "SleepStop")]
-    class ResetDailyTippedTimesPatch
+    private class ResetDailyTippedTimesPatch
     {
         [HarmonyPostfix]
         static void Postfix()
@@ -133,7 +140,7 @@ public class SleepPlease : BaseUnityPlugin
     }
 
     [HarmonyPatch(typeof(Player), "SetSleeping")]
-    class ResetDailyTippedTimes
+    private class ResetDailyTippedTimes
     {
         [HarmonyPostfix]
         static void Postfix()
@@ -147,7 +154,6 @@ public class SleepPlease : BaseUnityPlugin
     private static void CheckSleep(object source, ElapsedEventArgs args)
     {
         isShowInBed = false;
-
 
         // Log.LogDebug("1");
         Player player = Player.m_localPlayer;
@@ -163,7 +169,6 @@ public class SleepPlease : BaseUnityPlugin
         }
 
         // Log.LogDebug("3");
-
 
         bool isTimeCanSleep = EnvMan.instance.CanSleep();
 
