@@ -33,6 +33,6 @@ public class RPC
             msg += $"{player},";
         }
 
-        Log.LogInfo($"{RPCNameXSleepPlease}, msg: {msg}");
+        Log.LogDebug($"{RPCNameXSleepPlease}, msg: {msg}");
     }
 }

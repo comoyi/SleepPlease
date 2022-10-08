@@ -51,6 +51,7 @@ public class SleepPlease : BaseUnityPlugin
     {
         Log = Logger;
         RPC.SetLog(Log);
+        Server.SetLog(Log);
 
         configPositionX = Config.Bind("UI", "X", 50, "Position X");
         positionX = configPositionX.Value;
@@ -96,13 +97,13 @@ public class SleepPlease : BaseUnityPlugin
                 {
                     GUI.Label(new Rect(positionX - 35, positionY + offsetY, 32, 32), sleepIcon);
                     GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p}", guiStyle);
-                    offsetY += 20;
+                    offsetY += 22;
                 }
 
                 foreach (var p in notInBedPlayerInfos)
                 {
                     GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p}", guiStyle);
-                    offsetY += 20;
+                    offsetY += 22;
                 }
             }
             catch (Exception)
@@ -112,7 +113,7 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Game), "Awake")]
+    [HarmonyPatch(typeof(Game), "Start")]
     private class CheckSleepPatch
     {
         [HarmonyPostfix]
@@ -122,7 +123,17 @@ public class SleepPlease : BaseUnityPlugin
             timer.Enabled = true;
             timer.Interval = 3000;
             timer.Start();
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(ServerCheckSleep);
+
+            if (ZNet.instance.IsServer())
+            {
+                Log.LogInfo("Is Server");
+                timer.Elapsed += new System.Timers.ElapsedEventHandler(Server.ServerCheckSleep);
+            }
+            else
+            {
+                Log.LogInfo("Not Server");
+            }
+
             timer.Elapsed += new System.Timers.ElapsedEventHandler(ClientCheckSleep);
         }
     }
@@ -161,54 +172,6 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    private static void ServerCheckSleep(object source, ElapsedEventArgs args)
-    {
-        Log.LogDebug("Server 1");
-        isShowStatusPanel = false;
-
-        bool isTimeCanSleep = EnvMan.instance.CanSleep();
-
-        if (isTimeCanSleep)
-        {
-            Log.LogDebug("Server 2 can sleep now");
-
-            int inBed = 0;
-            int total = 0;
-            List<Player> players = Player.GetAllPlayers();
-
-            List<string> inBedPlayerInfos = new();
-            List<string> notInBedPlayerInfos = new();
-
-            foreach (Player p in players)
-            {
-                total++;
-                if (p.InBed())
-                {
-                    inBed++;
-                    inBedPlayerInfos.Add(p.GetPlayerName());
-                }
-                else
-                {
-                    notInBedPlayerInfos.Add(p.GetPlayerName());
-                }
-            }
-            
-            if (inBed > 0)
-            {
-                isShowStatusPanel = true;
-            }
-
-            // for test
-            isShowStatusPanel = true;
-            inBedPlayerInfos.Add("fake-in-X");
-            inBedPlayerInfos.Add("fake-in-Y");
-            notInBedPlayerInfos.Add("fake-notin-1");
-            notInBedPlayerInfos.Add("fake-notin-2");
-            
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, inBedPlayerInfos, notInBedPlayerInfos, isShowStatusPanel);
-        }
-    }
-
     private static void ClientCheckSleep(object source, ElapsedEventArgs args)
     {
         Player player = Player.m_localPlayer;
@@ -221,7 +184,7 @@ public class SleepPlease : BaseUnityPlugin
         {
             return;
         }
-        
+
         if (player.IsSleeping())
         {
             return;
