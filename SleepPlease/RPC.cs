@@ -20,19 +20,19 @@ public class RPC
         SleepPlease.NotInBedPlayerInfos = notInBedPlayers;
         SleepPlease.IsShowStatusPanel = isShowStatusPanel;
 
-        string msg = "";
-        msg += "in: ";
-        foreach (var player in inBedPlayers)
-        {
-            msg += $"{player},";
-        }
-
-        msg += ";notin: ";
-        foreach (var player in notInBedPlayers)
-        {
-            msg += $"{player},";
-        }
-
-        Log.LogDebug($"{RPCNameXSleepPlease}, isShowStatusPanel: {isShowStatusPanel}, msg: {msg}");
+        // string msg = "";
+        // msg += "in: ";
+        // foreach (var player in inBedPlayers)
+        // {
+        //     msg += $"{player},";
+        // }
+        //
+        // msg += ";notin: ";
+        // foreach (var player in notInBedPlayers)
+        // {
+        //     msg += $"{player},";
+        // }
+        //
+        // Log.LogDebug($"{RPCNameXSleepPlease}, isShowStatusPanel: {isShowStatusPanel}, msg: {msg}");
     }
 }

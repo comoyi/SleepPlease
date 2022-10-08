@@ -11,6 +11,8 @@ public class Server
     private static List<string> inBedPlayerInfos = new();
     private static List<string> notInBedPlayerInfos = new();
 
+    private static readonly List<string> emptyStringList = new();
+
     public static void SetLog(ManualLogSource Log)
     {
         Server.Log = Log;
@@ -35,22 +37,9 @@ public class Server
             Log.LogDebug("[Server] 2 can sleep now");
 
             int inBedCount = 0;
-            List<Player> players = Player.GetAllPlayers();
 
             inBedPlayerInfos.Clear();
             notInBedPlayerInfos.Clear();
-            foreach (Player p in players)
-            {
-                if (p.InBed())
-                {
-                    inBedCount++;
-                    inBedPlayerInfos.Add(">" + p.GetPlayerName());
-                }
-                else
-                {
-                    notInBedPlayerInfos.Add(">" + p.GetPlayerName());
-                }
-            }
 
             List<ZDO> allCharacterZdos = ZNet.instance.GetAllCharacterZDOS();
             if (allCharacterZdos.Count > 0)
@@ -60,11 +49,11 @@ public class Server
                     if (zdo.GetBool("inBed"))
                     {
                         inBedCount++;
-                        inBedPlayerInfos.Add("*" + zdo.GetString("playerName", "-"));
+                        inBedPlayerInfos.Add(zdo.GetString("playerName", "-"));
                     }
                     else
                     {
-                        notInBedPlayerInfos.Add("*" + zdo.GetString("playerName", "-"));
+                        notInBedPlayerInfos.Add(zdo.GetString("playerName", "-"));
                     }
                 }
             }
@@ -74,18 +63,11 @@ public class Server
                 isShowStatusPanel = true;
             }
 
-            // for test
-            // isShowStatusPanel = true;
-            // inBedPlayerInfos.Add("fake-in-X");
-            // inBedPlayerInfos.Add("fake-in-Y");
-            // notInBedPlayerInfos.Add("fake-notin-1");
-            // notInBedPlayerInfos.Add("fake-notin-2");
-
             ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, inBedPlayerInfos, notInBedPlayerInfos, isShowStatusPanel);
         }
         else
         {
-            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, new List<string>(), new List<string>(), false);
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, emptyStringList, emptyStringList, false);
         }
     }
 }
