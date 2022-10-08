@@ -44,11 +44,28 @@ public class Server
                 if (p.InBed())
                 {
                     inBedCount++;
-                    inBedPlayerInfos.Add(p.GetPlayerName());
+                    inBedPlayerInfos.Add(">" + p.GetPlayerName());
                 }
                 else
                 {
-                    notInBedPlayerInfos.Add(p.GetPlayerName());
+                    notInBedPlayerInfos.Add(">" + p.GetPlayerName());
+                }
+            }
+
+            List<ZDO> allCharacterZdos = ZNet.instance.GetAllCharacterZDOS();
+            if (allCharacterZdos.Count > 0)
+            {
+                foreach (ZDO zdo in allCharacterZdos)
+                {
+                    if (zdo.GetBool("inBed"))
+                    {
+                        inBedCount++;
+                        inBedPlayerInfos.Add("*" + zdo.GetString("playerName", "-"));
+                    }
+                    else
+                    {
+                        notInBedPlayerInfos.Add("*" + zdo.GetString("playerName", "-"));
+                    }
                 }
             }
 
@@ -65,6 +82,10 @@ public class Server
             // notInBedPlayerInfos.Add("fake-notin-2");
 
             ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, inBedPlayerInfos, notInBedPlayerInfos, isShowStatusPanel);
+        }
+        else
+        {
+            ZRoutedRpc.instance.InvokeRoutedRPC(ZRoutedRpc.Everybody, RPC.RPCNameXSleepPlease, new List<string>(), new List<string>(), false);
         }
     }
 }
