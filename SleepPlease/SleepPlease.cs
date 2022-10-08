@@ -209,7 +209,7 @@ public class SleepPlease : BaseUnityPlugin
                 if (dailyTippedTimes <= dailyMaxTipTimes)
                 {
                     Log.LogDebug("show message center");
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText} {inBedCount}/{totalCount} 已躺好", 0);
+                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText} {inBedCount}/{totalCount}", 0);
                 }
                 else
                 {
