@@ -14,7 +14,7 @@ public class SleepPlease : BaseUnityPlugin
 {
     private const string pluginGUID = "com.comoyi.valheim.SleepPlease";
     private const string pluginName = "SleepPlease";
-    private const string pluginVersion = "1.0.3";
+    private const string pluginVersion = "1.0.5";
 
     private readonly Harmony harmony = new Harmony(pluginGUID);
 
@@ -41,15 +41,17 @@ public class SleepPlease : BaseUnityPlugin
     private static string canSleepTipText = "天黑了！";
 
     private GUIStyle guiStyle;
-    private static bool isShowInBed = false;
+    private static bool isShowStatusPanel = false;
 
     private static Texture2D sleepIcon;
-    private static List<Player> inBedPlayers = new List<Player>();
-    private static List<Player> notInBedPlayers = new List<Player>();
+    private static List<string> inBedPlayerInfos = new();
+    private static List<string> notInBedPlayerInfos = new();
 
     private void Awake()
     {
         Log = Logger;
+        RPC.SetLog(Log);
+        Server.SetLog(Log);
 
         configPositionX = Config.Bind("UI", "X", 50, "Position X");
         positionX = configPositionX.Value;
@@ -85,24 +87,23 @@ public class SleepPlease : BaseUnityPlugin
 
     private void OnGUI()
     {
-        if (isShowInBed)
+        if (isShowStatusPanel)
         {
-            // int offsetX = 0;
             int offsetY = 0;
 
             try
             {
-                foreach (Player p in inBedPlayers)
+                foreach (var p in inBedPlayerInfos)
                 {
                     GUI.Label(new Rect(positionX - 35, positionY + offsetY, 32, 32), sleepIcon);
-                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                    offsetY += 20;
+                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p}", guiStyle);
+                    offsetY += 22;
                 }
 
-                foreach (Player p in notInBedPlayers)
+                foreach (var p in notInBedPlayerInfos)
                 {
-                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p.GetPlayerName()}", guiStyle);
-                    offsetY += 20;
+                    GUI.Label(new Rect(positionX, positionY + offsetY, 200, 400), $"{p}", guiStyle);
+                    offsetY += 22;
                 }
             }
             catch (Exception)
@@ -112,7 +113,7 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Game), "Awake")]
+    [HarmonyPatch(typeof(Game), "Start")]
     private class CheckSleepPatch
     {
         [HarmonyPostfix]
@@ -122,10 +123,30 @@ public class SleepPlease : BaseUnityPlugin
             timer.Enabled = true;
             timer.Interval = 3000;
             timer.Start();
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(CheckSleep);
+
+            if (ZNet.instance.IsServer())
+            {
+                Log.LogInfo("Is Server");
+                timer.Elapsed += new System.Timers.ElapsedEventHandler(Server.ServerCheckSleep);
+            }
+            else
+            {
+                Log.LogInfo("Not Server");
+            }
+
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(ClientCheckSleep);
         }
     }
 
+    [HarmonyPatch(typeof(Game), "Start")]
+    private class RegisterRPCPatch
+    {
+        [HarmonyPrefix]
+        static void Prefix()
+        {
+            ZRoutedRpc.instance.Register<List<string>, List<string>, bool>(RPC.RPCNameXSleepPlease, new Action<long, List<string>, List<string>, bool>(RPC.RPC_XSleepPleaseS));
+        }
+    }
 
     [HarmonyPatch(typeof(Game), "SleepStop")]
     private class ResetDailyTippedTimesPatch
@@ -151,79 +172,47 @@ public class SleepPlease : BaseUnityPlugin
         }
     }
 
-    private static void CheckSleep(object source, ElapsedEventArgs args)
+    private static void ClientCheckSleep(object source, ElapsedEventArgs args)
     {
-        isShowInBed = false;
-
-        // Log.LogDebug("1");
         Player player = Player.m_localPlayer;
         if (!(bool)(UnityEngine.Object)player)
         {
             return;
         }
 
-        // Log.LogDebug("2");
+        if (player.InBed())
+        {
+            return;
+        }
+
         if (player.IsSleeping())
         {
             return;
         }
 
-        // Log.LogDebug("3");
-
         bool isTimeCanSleep = EnvMan.instance.CanSleep();
 
         if (isTimeCanSleep)
         {
-            // for test
-            // isShowInBed = true;
-
             canSleepDailyTippedTimes++;
             if (canSleepDailyTippedTimes <= canSleepDailyMaxTipTimes)
             {
-                // Log.LogDebug("4 can sleep now");
                 MessageHud.instance.ShowBiomeFoundMsg(canSleepTipText, false);
             }
 
-            // Log.LogDebug("5");
+            int inBedCount = inBedPlayerInfos.Count;
+            int totalCount = inBedPlayerInfos.Count + notInBedPlayerInfos.Count;
 
-            int inBed = 0;
-            int total = 0;
-            List<Player> players = Player.GetAllPlayers();
-            inBedPlayers.Clear();
-            notInBedPlayers.Clear();
-
-            foreach (Player p in players)
+            if (inBedCount > 0 && inBedCount != totalCount)
             {
-                total++;
-                if (p.InBed())
-                {
-                    inBed++;
-                    inBedPlayers.Add(p);
-                }
-                else
-                {
-                    notInBedPlayers.Add(p);
-                }
-            }
-
-
-            if (inBed > 0)
-            {
-                isShowInBed = true;
-            }
-
-            if (inBed > 0 && inBed != total)
-            {
-                // Log.LogDebug("6");
                 dailyTippedTimes++;
                 if (dailyTippedTimes <= dailyMaxTipTimes)
                 {
                     Log.LogDebug("show message center");
-                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText} {inBed}/{total} 已躺好", 0);
+                    MessageHud.instance.ShowMessage(MessageHud.MessageType.Center, $"{sleepTipText} {inBedCount}/{totalCount}", 0);
                 }
                 else
                 {
-                    // Log.LogDebug("7");
                 }
             }
         }
@@ -312,5 +301,23 @@ public class SleepPlease : BaseUnityPlugin
         }
 
         return null;
+    }
+
+    public static List<string> InBedPlayerInfos
+    {
+        get => inBedPlayerInfos;
+        set => inBedPlayerInfos = value;
+    }
+
+    public static List<string> NotInBedPlayerInfos
+    {
+        get => notInBedPlayerInfos;
+        set => notInBedPlayerInfos = value;
+    }
+
+    public static bool IsShowStatusPanel
+    {
+        get => isShowStatusPanel;
+        set => isShowStatusPanel = value;
     }
 }
