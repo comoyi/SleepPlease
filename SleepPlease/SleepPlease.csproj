@@ -4,7 +4,7 @@
         <TargetFramework>net46</TargetFramework>
         <AssemblyName>SleepPlease</AssemblyName>
         <Description>A MOD for valheim</Description>
-        <Version>1.0.5</Version>
+        <Version>1.0.7</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -32,6 +32,6 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="Xcopy &quot;$(OutDir)SleepPlease.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\SleepPlease\&quot; /y" />
+      <Exec Command="Xcopy &quot;$(OutDir)SleepPlease.dll&quot; &quot;$(SolutionDir)thunderstore\BepInEx\plugins\SleepPlease\&quot; /Y&#xA;Xcopy &quot;$(OutDir)SleepPlease.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins\SleepPlease\&quot; /Y" />
     </Target>
 </Project>
