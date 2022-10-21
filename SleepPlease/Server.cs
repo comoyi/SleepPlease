@@ -36,6 +36,14 @@ public class Server
 
             inBedPlayerInfos.Clear();
             notInBedPlayerInfos.Clear();
+            
+            // // for tt add est
+            // inBedPlayerInfos.Add("玩家");
+            // inBedPlayerInfos.Add("Player");
+            // inBedPlayerInfos.Add("プレイヤー");
+            // notInBedPlayerInfos.Add("玩家");
+            // notInBedPlayerInfos.Add("Player");
+            // notInBedPlayerInfos.Add("プレイヤー");
 
             List<ZDO> allCharacterZdos = ZNet.instance.GetAllCharacterZDOS();
             if (allCharacterZdos.Count > 0)
