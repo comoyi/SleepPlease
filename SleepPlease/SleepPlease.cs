@@ -14,7 +14,7 @@ public class SleepPlease : BaseUnityPlugin
 {
     private const string pluginGUID = "com.comoyi.valheim.SleepPlease";
     private const string pluginName = "SleepPlease";
-    private const string pluginVersion = "1.0.5";
+    private const string pluginVersion = "1.0.6";
 
     private readonly Harmony harmony = new Harmony(pluginGUID);
 
