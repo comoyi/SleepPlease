@@ -26,16 +26,12 @@ public class Server
             return;
         }
 
-        Log.LogDebug("[Server] 1");
-
         bool isShowStatusPanel = false;
 
         bool isTimeCanSleep = EnvMan.instance.CanSleep();
 
         if (isTimeCanSleep)
         {
-            Log.LogDebug("[Server] 2 can sleep now");
-
             int inBedCount = 0;
 
             inBedPlayerInfos.Clear();
