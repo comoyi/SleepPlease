@@ -26,20 +26,24 @@ public class Server
             return;
         }
 
-        Log.LogDebug("[Server] 1");
-
         bool isShowStatusPanel = false;
 
         bool isTimeCanSleep = EnvMan.instance.CanSleep();
 
         if (isTimeCanSleep)
         {
-            Log.LogDebug("[Server] 2 can sleep now");
-
             int inBedCount = 0;
 
             inBedPlayerInfos.Clear();
             notInBedPlayerInfos.Clear();
+            
+            // // for tt add est
+            // inBedPlayerInfos.Add("玩家");
+            // inBedPlayerInfos.Add("Player");
+            // inBedPlayerInfos.Add("プレイヤー");
+            // notInBedPlayerInfos.Add("玩家");
+            // notInBedPlayerInfos.Add("Player");
+            // notInBedPlayerInfos.Add("プレイヤー");
 
             List<ZDO> allCharacterZdos = ZNet.instance.GetAllCharacterZDOS();
             if (allCharacterZdos.Count > 0)
