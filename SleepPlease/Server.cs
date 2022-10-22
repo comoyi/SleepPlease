@@ -37,7 +37,7 @@ public class Server
             inBedPlayerInfos.Clear();
             notInBedPlayerInfos.Clear();
             
-            // // for tt add est
+            // // for test
             // inBedPlayerInfos.Add("玩家");
             // inBedPlayerInfos.Add("Player");
             // inBedPlayerInfos.Add("プレイヤー");
